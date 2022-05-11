@@ -1,68 +1,138 @@
+<?php include "db.php";?>
+
 <?php
 
-function insert_categories() {
+function createRows() {
+
+  if (isset($_POST["submit"])) {
+    global $connection;
+
+    $naam = $_POST['naam'];
+    $password = $_POST['password'];
+
+    $naam = mysqli_real_escape_string($connection,$naam );
+    $password = mysqli_real_escape_string($connection,$password );
+
+    $hashFormat ="$2y$10$";
+    $salt ="eensteenisnetzozwaarals";
+    $hashF_and_salt = $hashFormat . $salt;
+    $password = crypt($password,$hashF_and_salt);
+
+    $query =  "INSERT INTO users(naam,password)";
+    $query .= "VALUES ('$naam', '$password')";
+
+    $result = mysqli_query($connection, $query);
+
+    if(!$result) {
+
+      die('Query Gefaald' . mysqli_error());
+
+    } else {
+
+      echo"Account aangemaakt";
+
+    } 
+
+  }
+
+}
+
+function readRows(){
 
     global $connection;
 
-    if(isset($_POST['submit'])) {
+    $query =  "SELECT * FROM users";
+    $result = mysqli_query($connection, $query);
 
-        $cat_title = $_POST['cat_title'];
+    if(!$result) {
 
-        if($cat_title == "" || empty($cat_title)) {
+      die('Query Gefaald' . mysqli_error());
 
-        echo "This field should be not be empty";
+    }
 
-        } else {
+    while($row = mysqli_fetch_assoc($result)) {
 
-        $query = "INSERT INTO categories(cat_title) ";
-        $query .= "VALUE('{$cat_title}') ";
-                                
-        $create_category_query = mysqli_query($connection, $query);
+      print_r($row);
 
-        if(!$create_category_query) {
-
-            die('Query Gefaald ' . mysqli_error($connection));
-
-            }
-        }
     }
 }
 
-function findAllCategories() {
+
+function showAllData() {
 
     global $connection;
 
-    $query = "SELECT * FROM categories";
-    $select_categories = mysqli_query($connection,$query);
+    $query =  "SELECT * FROM users";
+    $result = mysqli_query($connection, $query);
 
-    while($row = mysqli_fetch_assoc($select_categories)) {
+    if(!$result) {
 
-    $cat_id = $row['cat_id'];
-    $cat_title = $row['cat_title'];
-                            
-    echo "<tr>";
-    echo "<td>{$cat_id}</td>";
-    echo "<td>{$cat_title}</td>";
-    echo "<td><a href='categories.php?delete={$cat_id}'>Delete</a></td>";
-    echo "<td><a href='categories.php?edit={$cat_id}'>Edit</a></td>";
-    echo "</tr>";
-                        
+      die('Query Gefaald' . mysqli_error());
+
     }
+
+    while($row = mysqli_fetch_assoc($result)) {
+
+          $id = $row['id'];
+
+          echo "<option value='$id'>$id</option>";
+      }
 }
 
-function delete_categories() {
+function updateTable() {
 
     global $connection;
 
-    if(isset($_GET['delete'])) {
+    if (isset($_POST["submit"])) {
 
-    $the_cat_id = $_GET['delete'];
-    $query = "DELETE FROM categories WHERE cat_id = {$the_cat_id} ";
-    $delete_query = mysqli_query($connection,$query);
+    $id = $_POST['id'];
+    $naam = $_POST['naam'];
+    $password = $_POST['password'];
 
-    header("Location: categories.php");
+    $query = "UPDATE users SET ";
+    $query .= "naam = '$naam', ";
+    $query .= "password = '$password' ";
+    $query .= "WHERE id = $id";
+
+    $result = mysqli_query($connection, $query);
+
+      if(!$result) {
+
+        die('Query Gefaald' . mysqli_error());
+
+      } else {
+        echo"Gegevens geupdate";
+      }
 
     }
+
 }
+
+  function deleteRows(){
+
+  global $connection;
+
+  if (isset($_POST["submit"])) {
+ 
+  $id = $_POST['id'];
+  $naam = $_POST['naam'];
+  $password = $_POST['password'];
+
+  $query = "DELETE FROM users ";
+  $query .= "WHERE id = $id ";
+
+  $result = mysqli_query($connection, $query);
+
+    if(!$result) {
+
+      die('Query Gefaald' . mysqli_error());
+
+    } else {
+      echo "Gebruiker verwijderd";
+    }
+
+  }
+
+  }
 
 ?>
